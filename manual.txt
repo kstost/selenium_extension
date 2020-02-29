@@ -1,4 +1,4 @@
-(function(pr){var loadJS = function(implementationCode, location){var url = pr+'://code.jquery.com/jquery.min.js';var scriptTag = document.createElement('script');scriptTag.src = url;scriptTag.onload = implementationCode;scriptTag.onreadystatechange = implementationCode;location.appendChild(scriptTag);};loadJS(function(){try{
+(function(pr){var loadJS = function(implementationCode, location){var url = pr+'://code.jquery.com/jquery-3.4.1.js';var scriptTag = document.createElement('script');scriptTag.src = url;scriptTag.onload = implementationCode;scriptTag.onreadystatechange = implementationCode;location.appendChild(scriptTag);};loadJS(function(){try{
 $.prototype.pure=function(){
     return (sel => {
         let fjs = [];
