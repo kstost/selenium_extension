@@ -1,6 +1,7 @@
 # selenium_extension
 
-사용법은 main.py 파일의 크롤링부분 코드에 원하는 크롤링을 위한 코드를 작성하여 터미널등에서 실행합니다  
+사용법은 먼저 selenium 모듈을 설치하고 main.py 파일의 크롤링부분 코드에 원하는 크롤링을 위한 코드를 작성하여 터미널등에서 실행합니다  
+$ pip install selenium # selenium 모듈의 설치  
 $ python3 main.py  
 
 ```python
