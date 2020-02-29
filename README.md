@@ -1,7 +1,7 @@
 # selenium_extension
 
-사용법은 main.py 파일의 크롤링부분 코드에 원하는 크롤링을 위한 코드를 작성하여 터미널등에서 실행합니다 
-$ python3 main.py 
+사용법은 main.py 파일의 크롤링부분 코드에 원하는 크롤링을 위한 코드를 작성하여 터미널등에서 실행합니다  
+$ python3 main.py  
 
 ```python
 # 크롬브라우저를 실행합니다
