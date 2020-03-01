@@ -36,9 +36,8 @@ if openURL('https://chromedriver.storage.googleapis.com/index.html?path=80.0.398
     # 아래와 같은 방법으로 내가 원하는 엘리먼트를 선택해줍니다
     # a 라고 쓰면 태그이름이 a 인것들을 선택하겠다는 의미입니다
     # 
-    # 이 표현은 제이쿼리 셀렉터 방법을 따릅니다
-    # 이 선택표현을 쓰는 방법은 구글에 "제이쿼리 셀렉터" 라고 검색하면 많이 찾을 수 있습니다
-    # https://zetawiki.com/wiki/JQuery_%EC%85%80%EB%A0%89%ED%84%B0
+    # 이 표현은 querySelectorAll 에서 사용하는 것과 동일합니다
+    # https://developer.mozilla.org/ko/docs/Web/API/Document/querySelectorAll
     # 
     # 엘리먼트가 아직 존재하지 않는다면 존재할때까지 기다립니다
     # 기본적으로 30초가 지나도 존재하지 않으면 None 을 리턴합니다
@@ -53,6 +52,40 @@ if openURL('https://chromedriver.storage.googleapis.com/index.html?path=80.0.398
     # 문서에서 관련 API 를 참고할 수 있습니다
     for element in selected:
         print(element.get_attribute('href'))
+    print('-'*80)
+
+    # 위 코드의 selected = selector('a',driver) 와 동일한 방법으로써 아래와 같이도 가능합니다
+    # 한가지 차이점은 a 가 존재하지 않는다면 생길때까지 기다려주지 않고 바로 리턴합니다
+    selected = js("return document.querySelectorAll('a')", driver)
+    for element in selected:
+        print(element.get_attribute('href'))
+    print('-'*80)
+
+    # 위 코드의 selected = selector('a',driver) 와 동일한 또 다른 방법으로써 아래와 같이도 가능합니다
+    # 이 방법도 역시 a 가 존재하지 않는다면 생길때까지 기다려주지 않고 바로 리턴합니다
+    # 이 방법은 웹페이지 내에 jquery 가 적용 되어있는 경우 사용 가능합니다
+    # jquery 사용 가능 여부는 isJQueryImported 함수로 확인 할 수 있습니다
+    # jquery 가 적용되있지 않은 사이트의 경우 openURL로 불러오는 시점에 기본적으로 적용시킵니다
+    if isJQueryImported(driver):
+        selected = js("return $('a').pure()", driver)
+        for element in selected:
+            print(element.get_attribute('href'))
+        print('-'*80)
+
+    # 이 코드는 셀레늄 웹드라이버에서 제공하는 API 입니다
+    # 이 방법도 역시 a 가 존재하지 않는다면 생길때까지 기다려주지 않고 바로 리턴합니다
+    selected = driver.find_elements_by_tag_name('a')
+    for element in selected:
+        print(element.get_attribute('href'))
+    print('-'*80)
+
+    # 이 코드는 셀레늄 웹드라이버에서 제공하는 API 입니다
+    # 이 방법은 selector() 함수처럼 a 엘리먼트가 존재해서 선택되어질수 있을때까지 기다려준다는점이 동일합니다.
+    # 코드 중에 있는 30은 기다려주는 시간입니다
+    selected = WebDriverWait(driver,30).until(EC.presence_of_all_elements_located((By.TAG_NAME, "a")))
+    for element in selected:
+        print(element.get_attribute('href'))
+    print('-'*80)
 
     # 화면을 지웁니다 (모든 엘리먼트가 제거됩니다)
     # 지워준 후 selector('a',driver) 를 실행하면 찾고자 하는건 존재하지 않고, 또 생겨날 일도 없기 때문에 계속 기다리다가 타임아웃 이후에 None 을 리턴할것입니다
@@ -63,6 +96,38 @@ if openURL('https://chromedriver.storage.googleapis.com/index.html?path=80.0.398
 
     # None이 확인될것입니다
     print(selected)
+
+    # 또 다른 페이지로의 이동을 원하면 이렇게 해줍니다.
+    print('-'*80)
+    if openURL('https://ko.wikipedia.org/wiki/%EC%9B%B9_%ED%81%AC%EB%A1%A4%EB%9F%AC', driver):
+        print(js("return location.href+' 로 접속했습니다';", driver))
+        try:
+            selected = selector('.mw-parser-output ul', driver)
+            for li in selected[3].find_elements_by_tag_name('li'):
+                print(li.text)
+        except BaseException:
+            pass
+
+
+        # 페이지의 높이를 얻어올 수 있습니다
+        height = js("return document.documentElement.scrollHeight", driver)
+        print('페이지의 높이는 %s pixel 입니다' % height)
+        print('-'*80)
+
+        # 링크를 클릭할 수 있습니다
+        # 링크를 누르면 웹페이지가 이동하게되는데요, 이동하게될때는 이동을 유발하는 코드의 전후에 아래와 같은 모습으로 작성해주는것을 권장드립니다
+        # 이렇게 해주는 이유는 페이지 이동후 로딩완료를 보장받기 위함이며 onload 함수가 리턴되는 시점이 이동하고 난 뒤 다음페이지의 로딩이 완료된 시점입니다
+        # openURL 함수를 이용해 페이지를 이동한 경우에는 자체적으로 이 처리를 해주므로 생략해도 좋습니다
+        leaveMarker = beforeLeavePage(driver)
+        js("document.querySelectorAll('.mw-wiki-logo')[0].click()", driver)
+        onload(leaveMarker, driver)
+        print(js("return location.href+' 로 접속했습니다';", driver))
+
+        # 아래와 같은 이동도 마찬가지 입니다
+        leaveMarker = beforeLeavePage(driver)
+        js("location.href='https://www.naver.com/';", driver)
+        onload(leaveMarker, driver)
+        print(js("return location.href+' 로 접속했습니다';", driver))
 
 # 모든 작업 완료 후 크롬브라우저를 끕니다
 driver.quit()

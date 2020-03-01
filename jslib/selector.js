@@ -8,7 +8,7 @@
         }
         let rtn = await new Promise(r => {
             let rs;
-            if (false) {
+            if (true) {
                 rs = document.querySelectorAll(query);
             } else {
                 rs = $(query).pure();

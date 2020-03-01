@@ -1,11 +1,12 @@
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 import os
+import time
 import platform
 
-def js(code, driver, asyncro=False):
+def js(code, driver, asynchro=False):
     try:
-        if asyncro:
+        if asynchro:
             return driver.execute_async_script(''+code.strip())
         else:
             return driver.execute_script(''+code.strip())
@@ -31,8 +32,10 @@ def waitingForPageLoadingComplete(driver,timeout):
     return runJSLib('jslib/ready.js', driver, template={'timeout':timeout}, asynchro=True)
 
 def importingJQuery(driver):
-    runJSLib('jslib/jquery-3.4.1.js', driver, asynchro=False)
-    return True
+    return runJSLib('jslib/jquery-3.4.1.js', driver, asynchro=False)
+
+def isJQueryImported(driver):
+    return js('try{return jQuery.fn.jquery==="3.4.1"}catch{return false;}', driver, asynchro=False)
 
 def dirPath():
     return os.path.dirname(os.path.realpath(__file__))+'/'
@@ -58,11 +61,12 @@ def clear(driver):
 
 def openURL(url, driver, timeout=30, jquery=True):
     try:
-        clear(driver)
+        marker = beforeLeavePage(driver)
         driver.get(url)
         wt = waitingForPageLoadingComplete(driver, timeout)
         if wt and jquery:
             importingJQuery(driver)
+        onload(marker, driver)
         return wt
     except TimeoutException:
         pass
@@ -72,3 +76,12 @@ def selector(query, driver, timeout=30):
         return runJSLib('jslib/selector.js', driver, template={'query':query, 'timeout':timeout}, asynchro=True)
     except TimeoutException:
         pass
+
+def beforeLeavePage(driver):
+    return runJSLib('jslib/define_refresh_mark.js', driver)
+
+def onload(marker, driver):
+    if not marker:
+        marker = ''
+    while not js("let marker='"+marker+"';return (marker.length?window[marker]===undefined:true) && document.readyState==='complete'", driver):
+        time.sleep(0.1)
