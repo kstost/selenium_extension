@@ -13,7 +13,7 @@ def js(code, driver, asynchro=False):
     except BaseException:
         return None
 
-def runJSLib(path, driver, template={}, asynchro=False):
+def runJSLib(path, driver, *argus, template={}, asynchro=False):
     try:
         with open(dirPath()+path, 'r') as code_js: 
             code = code_js.read()
@@ -21,15 +21,25 @@ def runJSLib(path, driver, template={}, asynchro=False):
                 for key in template:
                     value = str(template[key])
                     code = code.replace('#:'+key+':#', value)
-            if asynchro:
-                return driver.execute_async_script(code)
+            if len(argus) > 0:
+                if asynchro:
+                    # !!!
+                    return driver.execute_async_script(code, *argus)
+                else:
+                    return driver.execute_script(code, *argus)
             else:
-                return driver.execute_script(code)
+                if asynchro:
+                    return driver.execute_async_script(code)
+                else:
+                    return driver.execute_script(code)
     except TimeoutException:
         pass
 
 def waitingForPageLoadingComplete(driver,timeout):
     return runJSLib('jslib/ready.js', driver, template={'timeout':timeout}, asynchro=True)
+
+def event(driver, element, mode):
+    return runJSLib('jslib/event.js', driver, element, mode, asynchro=False)
 
 def importingJQuery(driver):
     return runJSLib('jslib/jquery-3.4.1.js', driver, asynchro=False)
