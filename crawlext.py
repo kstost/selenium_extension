@@ -38,6 +38,9 @@ def runJSLib(path, driver, *argus, template={}, asynchro=False):
 def waitingForPageLoadingComplete(driver,timeout):
     return runJSLib('jslib/ready.js', driver, template={'timeout':timeout}, asynchro=True)
 
+def changeselect(driver, element, mode):
+    return runJSLib('jslib/changeselectelement.js', driver, element, mode, asynchro=False)
+
 def event(driver, element, mode):
     return runJSLib('jslib/event.js', driver, element, mode, asynchro=False)
 
