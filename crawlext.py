@@ -6,8 +6,16 @@ import platform
 
 def js(code, driver, asynchro=False):
     try:
+        code = code.strip()
+        if os.path.isfile(code):
+            with open(dirPath()+code, 'r') as code_js: 
+                code = code_js.read()
         if asynchro:
-            return driver.execute_async_script(''+code.strip())
+            _code=''
+            with open(dirPath()+'jslib/console_shell.js', 'r') as code_js: 
+                _code = code_js.read()
+                _code = _code.replace('#:code:#', code)
+            return driver.execute_async_script(''+_code.strip())
         else:
             return driver.execute_script(''+code.strip())
     except BaseException:
@@ -48,7 +56,7 @@ def importingJQuery(driver):
     return runJSLib('jslib/jquery-3.4.1.js', driver, asynchro=False)
 
 def isJQueryImported(driver):
-    return js('try{return jQuery.fn.jquery==="3.4.1"}catch{return false;}', driver, asynchro=False)
+    return js('return (typeof jQuery) !== "undefined";', driver, asynchro=False)
 
 def dirPath():
     return os.path.dirname(os.path.realpath(__file__))+'/'
@@ -77,9 +85,7 @@ def openURL(url, driver, timeout=30, jquery=True):
         marker = beforeLeavePage(driver)
         driver.get(url)
         wt = waitingForPageLoadingComplete(driver, timeout)
-        if wt and jquery:
-            importingJQuery(driver)
-        onload(marker, driver)
+        onload(marker, driver, jquery=jquery)
         return wt
     except TimeoutException:
         pass
@@ -93,8 +99,10 @@ def selector(query, driver, timeout=30):
 def beforeLeavePage(driver):
     return runJSLib('jslib/define_refresh_mark.js', driver)
 
-def onload(marker, driver):
+def onload(marker, driver, jquery=True):
     if not marker:
         marker = ''
     while not js("let marker='"+marker+"';return (marker.length?window[marker]===undefined:true) && document.readyState==='complete'", driver):
         time.sleep(0.1)
+    if jquery and not isJQueryImported(driver):
+        importingJQuery(driver)
