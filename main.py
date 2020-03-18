@@ -122,13 +122,13 @@ if openURL('https://chromedriver.storage.googleapis.com/index.html?path=80.0.398
         # openURL 함수를 이용해 페이지를 이동한 경우에는 자체적으로 이 처리를 해주므로 생략해도 좋습니다
         leaveMarker = beforeLeavePage(driver)
         js("document.querySelectorAll('.mw-wiki-logo')[0].click()", driver)
-        onload(leaveMarker, driver)
+        onload(leaveMarker, driver, jquery=True)
         print(js("return location.href+' 로 접속했습니다';", driver))
 
         # 아래와 같은 이동도 마찬가지 입니다
         leaveMarker = beforeLeavePage(driver)
         js("location.href='https://www.naver.com/';", driver)
-        onload(leaveMarker, driver)
+        onload(leaveMarker, driver, jquery=True)
         print(js("return location.href+' 로 접속했습니다';", driver))
 
 # 모든 작업 완료 후 크롬브라우저를 끕니다
