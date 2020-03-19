@@ -1,0 +1,3 @@
+function def() {
+    return 'def';
+}

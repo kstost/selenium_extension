@@ -11,13 +11,36 @@ from easysqlite import EasySQLite
 from crawlext import *
 import time 
 #------------------------------------------------------------------------------------------------------
+#
+# [macOS 사용자들]
+# 그냥 python3 다 기본으로 있을테니 pip으로 selenium 만 설치해서 사용하면 됩니다
+# pip3 install selenium
+#
+# [윈도우 사용자들]
+# python3 을 설치하세요 그리고 pip 을 이용해서 selenium 도 설치하세요 그러면 끝.
+# pip3 install selenium
+#
+# [우분투 사용자들]
+# sudo apt update; sudo apt upgrade;
+# sudo apt install python3; # 파이선 설치
+# sudo apt install python3-pip; # 파이선 패키지 매니저 설치
+# sudo pip3 install selenium; # 셀레니움 설치
+# # 아래 코드는 크롬 설치인데 이걸 안하면 안된다.. 이걸 해야하는지 대체 어떻게 아냐.. 알아내는데 수명 갉아먹었다.
+# wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+# sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+# sudo apt-get update;
+# sudo apt-get install google-chrome-stable;
+#
+#------------------------------------------------------------------------------------------------------
 # 브라우저 환경 설정
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless") # 리눅스에서는 빼면 안된다
 chrome_options.add_argument("--window-size=1920x1080")
 chrome_options.add_argument("lang=ko_KR")
 chrome_options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 #------------------------------------------------------------------------------------------------------
+
+
 
 # 크롤링 코드 작성
 # 여기서 부터 크롤링을 위한 코드를 작성하면 됩니다
@@ -130,6 +153,7 @@ if openURL('https://chromedriver.storage.googleapis.com/index.html?path=80.0.398
         js("location.href='https://www.naver.com/';", driver)
         onload(leaveMarker, driver, jquery=True)
         print(js("return location.href+' 로 접속했습니다';", driver))
-
+        print(js('./jslogic/test.js', driver))
+        print(jsa('./jslogic/async_sample.js', driver))
 # 모든 작업 완료 후 크롬브라우저를 끕니다
 driver.quit()

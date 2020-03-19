@@ -4,43 +4,76 @@ import os
 import time
 import platform
 
+def readfile(file):
+    rt = []
+    if os.path.isfile(file):
+        f = open(file, 'r', encoding='utf-8')
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            rt.append(line)
+        f.close()
+    return ''.join(rt)
+
+def compile(code):
+    code = code.split('\n')
+    ncodeline = []
+    for line in code:
+        candidate = line.strip()
+        start = candidate[:5]
+        end = candidate[-6:]
+        path = ''
+        if start == "(['#:" and end == ":#']);":
+            path = candidate[5:].split(':')[0]
+        if len(path) > 0:
+            filepath = dirPath() + path
+            ncodeline.append('/* ['+filepath+'] */')
+            ncodeline.append(''+compile(readfile(filepath))+'')
+            ncodeline.append('/* [/'+filepath+'] */')
+        else:
+            ncodeline.append(line)
+    return '\n'.join(ncodeline)
+
+def jsa(code, driver):
+    return js(code, driver, asynchro=True)
+    
 def js(code, driver, asynchro=False):
     try:
         code = code.strip()
         if os.path.isfile(code):
-            with open(dirPath()+code, 'r') as code_js: 
-                code = code_js.read()
+            code = readfile(code)
+        code = compile(code)
+        _code = readfile(dirPath() + 'jslib/console_shell.js').replace("(['#:code:#']);", code).strip()
+        rtnnn = None
         if asynchro:
-            _code=''
-            with open(dirPath()+'jslib/console_shell.js', 'r') as code_js: 
-                _code = code_js.read()
-                _code = _code.replace('#:code:#', code)
-            return driver.execute_async_script(''+_code.strip())
+            rtnnn = driver.execute_async_script(_code)
         else:
-            return driver.execute_script(''+code.strip())
-    except BaseException:
+            rtnnn = driver.execute_script(_code)
+        return rtnnn
+    except BaseException as e:
+        print('js:Error: '+str(e))
         return None
 
 def runJSLib(path, driver, *argus, template={}, asynchro=False):
     try:
-        with open(dirPath()+path, 'r') as code_js: 
-            code = code_js.read()
-            if template:
-                for key in template:
-                    value = str(template[key])
-                    code = code.replace('#:'+key+':#', value)
-            if len(argus) > 0:
-                if asynchro:
-                    # !!!
-                    return driver.execute_async_script(code, *argus)
-                else:
-                    return driver.execute_script(code, *argus)
+        code = readfile(dirPath() + path)
+        if template:
+            for key in template:
+                value = str(template[key])
+                code = code.replace('#:'+key+':#', value)
+        if len(argus) > 0:
+            if asynchro:
+                return driver.execute_async_script(code, *argus)
             else:
-                if asynchro:
-                    return driver.execute_async_script(code)
-                else:
-                    return driver.execute_script(code)
-    except TimeoutException:
+                return driver.execute_script(code, *argus)
+        else:
+            if asynchro:
+                return driver.execute_async_script(code)
+            else:
+                return driver.execute_script(code)
+    except BaseException as e:
+        print('runJSLib:Error: '+str(e))
         pass
 
 def waitingForPageLoadingComplete(driver,timeout):
@@ -71,10 +104,11 @@ def openChrome(chrome_options, timeout=30):
         pla = platform.system().lower()
         driv = drivers[pla]
         driver = webdriver.Chrome(executable_path=dirPath()+'./drivers/'+pla+'/'+driv, options= chrome_options)
-        driver.set_script_timeout(3600*24)
+        driver.set_script_timeout(3600*(24*365*10))
         driver.set_page_load_timeout(timeout)
         return driver
-    except BaseException:
+    except BaseException as e:
+        print('openChrome:Error: '+str(e))
         pass
 
 def clear(driver):
@@ -87,13 +121,15 @@ def openURL(url, driver, timeout=30, jquery=True):
         wt = waitingForPageLoadingComplete(driver, timeout)
         onload(marker, driver, jquery=jquery)
         return wt
-    except TimeoutException:
+    except BaseException as e:
+        print('openURL:Error: '+str(e))
         pass
 
 def selector(query, driver, timeout=30):
     try:
         return runJSLib('jslib/selector.js', driver, template={'query':query, 'timeout':timeout}, asynchro=True)
-    except TimeoutException:
+    except BaseException as e:
+        print('selector:Error: '+str(e))
         pass
 
 def beforeLeavePage(driver):
